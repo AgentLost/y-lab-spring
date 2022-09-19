@@ -59,14 +59,56 @@ public class UserDataFacade {
                 .build();
     }
 
-    public UserBookResponse updateUserWithBooks(UserBookRequest userBookRequest) {
-        return null;
+    public UserBookResponse updateUserWithBooks(Long userId,UserBookRequest userBookRequest) {
+        log.info("Got user book create request: {}", userBookRequest);
+        UserDto userDto = userMapper.userRequestToUserDto(userBookRequest.getUserRequest());
+        log.info("Mapped user request: {}", userDto);
+        userDto.setId(userId);
+
+        UserDto createdUser = userService.updateUser(userDto);
+        log.info("Created user: {}", createdUser);
+
+        bookService.deleteAllByUserId(userId);
+        List<Long> bookIdList = userBookRequest.getBookRequests()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(bookMapper::bookRequestToBookDto)
+                .peek(bookDto -> bookDto.setUserId(createdUser.getId()))
+                .peek(mappedBookDto -> log.info("mapped book: {}", mappedBookDto))
+                .map(bookService::createBook)
+                .peek(createdBook -> log.info("Created book: {}", createdBook))
+                .map(BookDto::getId)
+                .toList();
+        log.info("Collected book ids: {}", bookIdList);
+
+        return UserBookResponse.builder()
+                .userId(createdUser.getId())
+                .booksIdList(bookIdList)
+                .build();
     }
 
     public UserBookResponse getUserWithBooks(Long userId) {
-        return null;
+        if(!userService.existsById(userId)){
+            throw new NotFoundException("user with this id: " + userId + "not found");
+        }
+
+        List<Long> books = bookService.getAllByUserId(userId)
+                .stream()
+                .map(BookDto::getId)
+                .toList();
+
+        return UserBookResponse.builder()
+                .userId(userId)
+                .booksIdList(books)
+                .build();
     }
 
     public void deleteUserWithBooks(Long userId) {
+        if(!userService.existsById(userId)){
+            throw new NotFoundException("user with this id: " + userId + "not found");
+        }
+
+        userService.deleteUserById(userId);
+        bookService.deleteAllByUserId(userId);
     }
 }
