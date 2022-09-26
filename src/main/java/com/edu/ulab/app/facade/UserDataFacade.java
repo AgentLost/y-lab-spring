@@ -112,8 +112,9 @@ public class UserDataFacade {
             throw new NotFoundException("user with this id: " + userId + "not found");
         }
 
+
+        bookService.deleteAllByUserId(userId);
         userService.deleteUserById(userId);
         log.info("Delete user with this id: {}", userId);
-        bookService.deleteAllByUserId(userId);
     }
 }

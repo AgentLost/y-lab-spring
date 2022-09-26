@@ -14,7 +14,6 @@ import javax.validation.constraints.NotNull;
 
 @Slf4j
 @Service
-@Primary
 public class UserServiceImpl implements UserService {
 
     private final UserMapper userMapper;

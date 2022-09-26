@@ -1,8 +1,12 @@
 package com.edu.ulab.app.service.impl;
 
 import com.edu.ulab.app.dto.UserDto;
+import com.edu.ulab.app.entity.Person;
+import com.edu.ulab.app.exception.NotFoundException;
+import com.edu.ulab.app.mapper.UserMapper;
 import com.edu.ulab.app.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -12,12 +16,16 @@ import java.sql.PreparedStatement;
 import java.util.Objects;
 
 @Slf4j
+@Primary
 @Service
 public class UserServiceImplTemplate implements UserService {
     private final JdbcTemplate jdbcTemplate;
 
-    public UserServiceImplTemplate(JdbcTemplate jdbcTemplate) {
+    private final UserMapper userMapper;
+
+    public UserServiceImplTemplate(JdbcTemplate jdbcTemplate, UserMapper userMapper) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -40,24 +48,61 @@ public class UserServiceImplTemplate implements UserService {
 
     @Override
     public UserDto updateUser(UserDto userDto) {
-        // реализовать недстающие методы
-        return null;
+        final String UPDATE_SQL = "UPDATE PERSON SET FULL_NAME = ?, TITLE = ?, AGE = ? where ID = ?;";
+
+        int count = jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection.prepareStatement(UPDATE_SQL);
+            ps.setString(1, userDto.getFullName());
+            ps.setString(2, userDto.getTitle());
+            ps.setLong(3, userDto.getAge());
+            ps.setLong(4, userDto.getId());
+
+            return ps;
+        });
+
+        if(count == 0){
+            throw new NotFoundException("user with this id: " + userDto.getId() + "not found");
+        }
+
+        return userDto;
     }
 
     @Override
     public UserDto getUserById(Long id) {
-        // реализовать недстающие методы
-        return null;
+        final String DELETE_SQL = "SELECT * FROM PERSON WHERE ID = ?";
+
+        Person person = jdbcTemplate.query(
+                DELETE_SQL,
+                ps -> ps.setLong(1, id),
+                rse -> {
+                    Person res = new Person(
+                            rse.getLong("id"),
+                            rse.getString("full_name"),
+                            rse.getString("title"),
+                            rse.getInt("age")
+                    );
+                    return res;
+                });
+
+        return userMapper.personToUserDto(person);
     }
 
     @Override
     public void deleteUserById(Long id) {
-        // реализовать недстающие методы
+        final String DELETE_SQL = "DELETE FROM PERSON WHERE ID = ?";
+
+        jdbcTemplate.update(DELETE_SQL, ps -> {
+            ps.setLong(1, id);
+        });
     }
 
     @Override
     public boolean existsById(Long id) {
-        return false;
+        final String SELECT_EXISTS_SQL = "SELECT count(*) FROM PERSON WHERE ID = ?";
+
+        int res = jdbcTemplate.queryForObject(SELECT_EXISTS_SQL, Integer.class, id);
+
+        return res > 0;
     }
 }
 
