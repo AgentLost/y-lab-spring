@@ -1,6 +1,25 @@
 swagger-api:
   version: "1.0"
 
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+      use-new-id-generator-mappings: false
+    show-sql: true
+    properties:
+      hibernate:
+        generate_statistics: true
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQL81Dialect
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ylab_db
+    username: postgres
+    password: mamaivdybai896712345NIK
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
 server:
   port: 8091
   servlet:
