@@ -29,7 +29,7 @@ public class Person {
 //    @Column(nullable = false)
 //    private int count;
 
-    @OneToMany(mappedBy = "userId", cascade = {
+    @OneToMany(mappedBy = "person", cascade = {
             CascadeType.MERGE,
             CascadeType.PERSIST,
             CascadeType.DETACH,

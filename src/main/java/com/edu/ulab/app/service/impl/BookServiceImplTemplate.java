@@ -26,11 +26,11 @@ public class BookServiceImplTemplate implements BookService {
     private final BookMapper bookMapper;
 
     RowMapper<Book> ROW_MAPPER = (ResultSet resultSet, int rowNum) -> {
-        return new Book(resultSet.getLong("id"),
-                resultSet.getLong("user_id"),
+        return new Book(/*resultSet.getLong("id"),
+
                 resultSet.getString("title"),
                 resultSet.getString("author"),
-                resultSet.getLong("page_count"));
+                resultSet.getLong("page_count")*/);
     };
 
     public BookServiceImplTemplate(JdbcTemplate jdbcTemplate, BookMapper bookMapper) {
@@ -84,12 +84,12 @@ public class BookServiceImplTemplate implements BookService {
         Book book = jdbcTemplate.query(SELECT_BY_ID_SQL,
                 ps -> ps.setLong(1, id),
                 rse -> {
-                    Book res = new Book(
+                    Book res = new Book(/*
                             rse.getLong("id"),
                             rse.getLong("user_id"),
                             rse.getString("title"),
                             rse.getString("author"),
-                            rse.getLong("pageCount")
+                            rse.getLong("pageCount")*/
                     );
                     return res;
                 });

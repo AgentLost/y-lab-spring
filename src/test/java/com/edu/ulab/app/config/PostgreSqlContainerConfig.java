@@ -18,9 +18,9 @@ import javax.sql.DataSource;
 public class PostgreSqlContainerConfig {
 
     private static final String IMAGE_VERSION = "postgres:13-alpine";
-    private static final String DB_NAME = "postgres";
+    private static final String DB_NAME = "ylab_db";
     private static final String USERNAME = "postgres";
-    private static final String PASSWORD = "mysecretpassword";
+    private static final String PASSWORD = "mamaivdybai896712345NIK";
     private static final String POSTGRESQL_DRIVER_CLASS_NAME = "org.postgresql.Driver";
     private static final String JDBC_URL_FORMAT = "jdbc:postgresql://%s:%s/%s";
 

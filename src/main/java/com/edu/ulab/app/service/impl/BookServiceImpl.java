@@ -29,45 +29,47 @@ public class BookServiceImpl implements BookService {
     @Override
     public BookDto createBook(@NotNull BookDto bookDto) {
         Book book = bookRepository.save(
-                bookMapper.bookDtoToUser(bookDto));
+                bookMapper.bookDtoToBook(bookDto));
+        log.info("Create book: {}", book);
         return bookMapper.bookToBookDto(book);
     }
 
     @Override
     public BookDto updateBook(@NotNull BookDto bookDto) {
-        Book book = bookRepository
-                .findByIdForUpdate(bookDto.getId())
-                .orElseThrow(() -> new NotFoundException("book with this id:" + bookDto.getId() + "not found"));
+        bookRepository.findById(bookDto.getId())
+                .orElseThrow(() -> new NotFoundException(""));
 
-        return bookMapper.bookToBookDto(book);
+        Book updateBook = bookRepository.save(
+                bookMapper.bookDtoToBook(bookDto));
+        log.info("Update book: {}", updateBook);
+
+        return bookMapper.bookToBookDto(updateBook);
     }
 
     @Override
     public BookDto getBookById(Long id) {
         Book book = bookRepository
-                .findByIdForUpdate(id)
+                .findById(id)
                 .orElseThrow(() -> new NotFoundException("book with this id:" + id + "not found"));
-
+        log.info("Get book: {}", book);
         return bookMapper.bookToBookDto(book);
     }
 
     @Override
     public void deleteBookById(Long id) {
-        if(!bookRepository.existsById(id)){
-            throw new NotFoundException("book with this id: " + id + " not found");
-        }
         bookRepository.deleteById(id);
     }
 
     @Override
     public void deleteAllByUserId(Long userId) {
-        bookRepository.deleteBooksByUserId(userId);
+        bookRepository.deleteBooksByPerson( userId);
     }
 
     @Override
     public List<BookDto> getAllByUserId(Long userId) {
-        return bookRepository.findAllByUserId(userId)
+        return bookRepository.findAllByPerson(userId)
                 .stream()
+                .peek(book -> log.info("Get book: {}", book))
                 .map(bookMapper::bookToBookDto)
                 .toList();
     }

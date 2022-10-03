@@ -16,7 +16,7 @@ public interface BookRepository extends CrudRepository<Book, Long> {
     Optional<Book> findByIdForUpdate(long id);
 
     @Transactional
-    void deleteBooksByUserId(Long userId);
+    void deleteBooksByPerson(Long userId);
 
-    List<Book> findAllByUserId(Long userId);
+    List<Book> findAllByPerson(Long userId);
 }

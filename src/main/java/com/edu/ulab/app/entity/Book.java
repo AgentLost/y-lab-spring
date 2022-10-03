@@ -29,12 +29,13 @@ public class Book {
     @Column(nullable = false)
     private long pageCount;
 
-    @Column(name = "person_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "person_id", nullable = false)
+    private Person person;
 
-    public Book(long id, long user_id, String title, String author, long page_count) {
+    public Book(long id, Person person, String title, String author, long page_count) {
         this.id = id;
-        this.userId = user_id;
+        this.person = person;
         this.title = title;
         this.author = author;
         this.pageCount = page_count;
