@@ -1,12 +1,13 @@
 package com.edu.ulab.app.service.impl;
 
-import com.edu.ulab.app.dao.BookDAO;
 import com.edu.ulab.app.dto.BookDto;
 import com.edu.ulab.app.entity.Book;
 import com.edu.ulab.app.exception.NotFoundException;
 import com.edu.ulab.app.mapper.BookMapper;
+import com.edu.ulab.app.repository.BookRepository;
 import com.edu.ulab.app.service.BookService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
@@ -14,60 +15,61 @@ import java.util.List;
 
 @Slf4j
 @Service
+@Primary
 public class BookServiceImpl implements BookService {
-    private final BookDAO bookDAO;
 
     private final BookMapper bookMapper;
+    private final BookRepository bookRepository;
 
-    public BookServiceImpl(BookDAO bookDAO, BookMapper bookMapper) {
-        this.bookDAO = bookDAO;
+    public BookServiceImpl(BookMapper bookMapper, BookRepository bookRepository) {
         this.bookMapper = bookMapper;
+        this.bookRepository = bookRepository;
     }
 
     @Override
     public BookDto createBook(@NotNull BookDto bookDto) {
-        Book book = bookDAO.createBook(bookDto);
+        Book book = bookRepository.save(
+                bookMapper.bookDtoToBook(bookDto));
+        log.info("Create book: {}", book);
         return bookMapper.bookToBookDto(book);
     }
 
     @Override
     public BookDto updateBook(@NotNull BookDto bookDto) {
-        Book book;
-        if(bookDAO.existsById(bookDto.getId())){
-            book = bookDAO.updateBook(bookDto);
-        }else{
-            book = bookDAO.createBook(bookDto);
-        }
+        bookRepository.findById(bookDto.getId())
+                .orElseThrow(() -> new NotFoundException(""));
 
-        return bookMapper.bookToBookDto(book);
+        Book updateBook = bookRepository.save(
+                bookMapper.bookDtoToBook(bookDto));
+        log.info("Update book: {}", updateBook);
+
+        return bookMapper.bookToBookDto(updateBook);
     }
 
     @Override
     public BookDto getBookById(Long id) {
-        if(!bookDAO.existsById(id)){
-            throw new NotFoundException("book with this id: " + id + " not found");
-        }
-
-        return bookMapper.bookToBookDto(
-                bookDAO.getBookById(id));
+        Book book = bookRepository
+                .findById(id)
+                .orElseThrow(() -> new NotFoundException("book with this id:" + id + "not found"));
+        log.info("Get book: {}", book);
+        return bookMapper.bookToBookDto(book);
     }
 
     @Override
     public void deleteBookById(Long id) {
-        if(!bookDAO.existsById(id)){
-            throw new NotFoundException("book with this id: " + id + " not found");
-        }
-        bookDAO.deleteBookById(id);
+        bookRepository.deleteById(id);
     }
 
     @Override
     public void deleteAllByUserId(Long userId) {
-        bookDAO.deleteAllByUserId(userId);
+        bookRepository.deleteBooksByPerson( userId);
     }
 
     @Override
     public List<BookDto> getAllByUserId(Long userId) {
-        return bookDAO.getBooksByUserId(userId).stream()
+        return bookRepository.findAllByPerson(userId)
+                .stream()
+                .peek(book -> log.info("Get book: {}", book))
                 .map(bookMapper::bookToBookDto)
                 .toList();
     }
