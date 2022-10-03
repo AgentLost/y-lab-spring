@@ -28,6 +28,7 @@ public class UserServiceImpl implements UserService {
     public UserDto createUser(@NotNull UserDto userDto) {
         Person user = userRepository.save(
                 userMapper.userDtoToPerson(userDto));
+        log.info("Create user: {}", user);
         return userMapper.personToUserDto(user);
         // сгенерировать идентификатор
         // создать пользователя
@@ -36,17 +37,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto updateUser(@NotNull UserDto userDto) {
-        Person user = userRepository
-                .findByIdForUpdate(userDto.getId())
-                .orElseThrow(() -> new NotFoundException("user with this id:" + userDto.getId() + "not found"));
-
-        user.setAge(userDto.getAge());
-        user.setTitle(userDto.getTitle());
-        user.setFullName(user.getFullName());
-
-        userRepository.save(user);
-
-        return userMapper.personToUserDto(user);
+        userRepository.findById(userDto.getId())
+                .orElseThrow(()->new NotFoundException("user with this id: " +  userDto.getId() + " not found"));
+        Person updatePerson = userRepository.save(
+                userMapper.userDtoToPerson(userDto));
+        log.info("Update user: {}", updatePerson);
+        return userMapper.personToUserDto(updatePerson);
     }
 
     @Override
@@ -54,16 +50,12 @@ public class UserServiceImpl implements UserService {
         Person user = userRepository
                 .findById(id)
                 .orElseThrow(() -> new NotFoundException("user with this id: " +  id + " not found"));
-
+        log.info("Get user: {}", user);
         return userMapper.personToUserDto(user);
     }
 
     @Override
     public void deleteUserById(Long id) {
-        if(!userRepository.existsById(id)){
-            throw new NotFoundException("user with this id: " +  id + " not found");
-        }
-
         userRepository.deleteById(id);
     }
 
