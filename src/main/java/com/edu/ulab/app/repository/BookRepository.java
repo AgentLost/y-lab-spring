@@ -18,5 +18,6 @@ public interface BookRepository extends CrudRepository<Book, Long> {
     @Transactional
     void deleteBooksByPerson(Long userId);
 
+    @Query("select b from Book b where b.person.id = :userId")
     List<Book> findAllByPerson(Long userId);
 }
